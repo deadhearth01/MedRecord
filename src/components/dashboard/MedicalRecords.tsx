@@ -32,7 +32,7 @@ import {
   Brain,
   Loader2
 } from 'lucide-react';
-import { type User, getMedicalRecords, type MedicalRecord, deleteMedicalRecord, downloadMedicalFile, updateMedicalRecord, analyzeExistingRecord, supabase } from '@/lib/supabase';
+import { type User, getMedicalRecords, type MedicalRecord, deleteMedicalRecord, downloadMedicalFile, updateMedicalRecord, analyzeExistingRecord } from '@/lib/supabase';
 import { analyzeMedicalDocument } from '@/lib/gemini';
 import { cn } from '@/lib/utils';
 
@@ -116,24 +116,6 @@ export default function MedicalRecords({ user, onUpload }: MedicalRecordsProps) 
   const handleViewRecord = (record: MedicalRecord) => {
     setSelectedRecord(record);
     setShowRecordModal(true);
-  };
-
-  const handleViewFile = async (record: MedicalRecord) => {
-    try {
-      if (record.file_path) {
-        // Get the public URL for the file
-        const { data } = supabase.storage
-          .from('medical-files')
-          .getPublicUrl(record.file_path);
-        
-        if (data?.publicUrl) {
-          // Open file in a new tab
-          window.open(data.publicUrl, '_blank');
-        }
-      }
-    } catch (error) {
-      console.error('Error viewing file:', error);
-    }
   };
 
   const handleDownloadRecord = async (record: MedicalRecord) => {
@@ -841,24 +823,13 @@ export default function MedicalRecords({ user, onUpload }: MedicalRecordsProps) 
               </div>
 
               <div className="flex justify-end space-x-2 pt-4 border-t">
-                {selectedRecord.file_path && (
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleViewFile(selectedRecord)}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View
-                  </Button>
-                )}
-                {selectedRecord.file_path && (
-                  <Button 
-                    variant="outline" 
-                    onClick={() => handleDownloadRecord(selectedRecord)}
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                )}
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleDownloadRecord(selectedRecord)}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
                 <Button onClick={() => setShowRecordModal(false)}>
                   Close
                 </Button>
