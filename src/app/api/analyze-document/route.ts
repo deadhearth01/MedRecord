@@ -45,6 +45,19 @@ async function fileToText(file: File): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Gemini API key is configured
+    if (!process.env.GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY not configured');
+      return NextResponse.json({
+        summary: 'Document uploaded successfully',
+        keyFindings: ['Document analysis unavailable - API key not configured'],
+        medications: [],
+        recommendations: ['Please configure GEMINI_API_KEY in environment variables'],
+        urgencyLevel: 'low',
+        documentType: 'other'
+      }, { status: 200 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
