@@ -17,7 +17,9 @@ import {
   Upload,
   Search,
   Users,
-  Sparkles
+  Sparkles,
+  Shield,
+  QrCode
 } from 'lucide-react';
 import { getCurrentUser, getUserProfile, signOut, type User as UserType } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
@@ -30,6 +32,9 @@ import Appointments from '@/components/dashboard/Appointments';
 import Profile from '@/components/dashboard/Profile';
 import PatientSearch from '@/components/dashboard/PatientSearch';
 import UploadModal from '@/components/dashboard/UploadModal';
+import PersonalVault from '@/components/dashboard/PersonalVault';
+import QRCodeManager from '@/components/dashboard/QRCodeManager';
+import EnhancedAppointments from '@/components/dashboard/EnhancedAppointments';
 
 function DashboardContent() {
   const [user, setUser] = useState<UserType | null>(null);
@@ -201,7 +206,9 @@ function DashboardContent() {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'records', label: 'Records', icon: FileText },
+    { id: 'vault', label: 'Personal Vault', icon: Shield },
     { id: 'appointments', label: 'Appointments', icon: Calendar },
+    { id: 'qr-codes', label: 'QR Codes', icon: QrCode },
     ...(user.user_type === 'doctor' ? [{ id: 'patients', label: 'Patients', icon: Users }] : []),
     { id: 'profile', label: 'Profile', icon: User },
   ];
@@ -339,8 +346,16 @@ function DashboardContent() {
                 />
               </TabsContent>
 
+              <TabsContent value="vault" className="space-y-6">
+                <PersonalVault userId={user.id} userType={user.user_type} />
+              </TabsContent>
+
               <TabsContent value="appointments" className="space-y-6">
-                <Appointments user={user} />
+                <EnhancedAppointments userId={user.id} userType={user.user_type} />
+              </TabsContent>
+
+              <TabsContent value="qr-codes" className="space-y-6">
+                <QRCodeManager userId={user.id} userMedId={user.med_id} userType={user.user_type} />
               </TabsContent>
 
               {user.user_type === 'doctor' && (
