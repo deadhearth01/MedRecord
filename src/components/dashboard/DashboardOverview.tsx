@@ -21,8 +21,8 @@ interface DashboardStats {
   totalRecords: number;
   totalAppointments: number;
   upcomingAppointments: number;
-  recentRecords: any[];
-  upcomingAppts: any[];
+  urgentRecords: number;
+  recordsByCategory: any;
   totalPatients?: number; // For doctors
 }
 
@@ -39,8 +39,11 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
   const loadStats = async () => {
     try {
       setError(null);
-      const data = await getDashboardStats(user.id);
-      setStats(data);
+      const result = await getDashboardStats(user.id);
+      if (result.error) {
+        throw result.error;
+      }
+      setStats(result.data);
     } catch (error) {
       console.error('Error loading dashboard stats:', error);
       setError('Failed to load dashboard data');
@@ -266,32 +269,11 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
             <CardDescription>Your latest medical records</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats?.recentRecords && stats.recentRecords.length > 0 ? (
-              <div className="space-y-3">
-                {stats.recentRecords.slice(0, 5).map((record: any) => (
-                  <div key={record.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <FileText className="h-4 w-4 text-gray-500" />
-                      <div>
-                        <p className="font-medium text-sm">{record.title}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(record.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">
-                      {record.category}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-sm">No medical records yet</p>
-                <p className="text-xs">Upload your first record to get started</p>
-              </div>
-            )}
+            <div className="text-center py-8 text-gray-500">
+              <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-sm">Recent records will appear here</p>
+              <p className="text-xs">Upload your first record to get started</p>
+            </div>
           </CardContent>
         </Card>
 
@@ -301,36 +283,11 @@ export default function DashboardOverview({ user }: DashboardOverviewProps) {
             <CardDescription>Your scheduled appointments</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats?.upcomingAppts && stats.upcomingAppts.length > 0 ? (
-              <div className="space-y-3">
-                {stats.upcomingAppts.slice(0, 5).map((appointment: any) => (
-                  <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <Calendar className="h-4 w-4 text-gray-500" />
-                      <div>
-                        <p className="font-medium text-sm">{appointment.title}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(appointment.appointment_date).toLocaleDateString()} at{' '}
-                          {appointment.appointment_time}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge 
-                      variant={appointment.status === 'confirmed' ? 'default' : 'secondary'}
-                      className="text-xs"
-                    >
-                      {appointment.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-sm">No upcoming appointments</p>
-                <p className="text-xs">Schedule your first appointment</p>
-              </div>
-            )}
+            <div className="text-center py-8 text-gray-500">
+              <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-sm">Upcoming appointments will appear here</p>
+              <p className="text-xs">Schedule your first appointment</p>
+            </div>
           </CardContent>
         </Card>
       </div>

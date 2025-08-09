@@ -210,7 +210,13 @@ export default function MedicalRecords({ user, onUpload }: MedicalRecordsProps) 
       const analysis = await analyzeMedicalDocument(file);
       
       // Save analysis to database
-      const { error: updateError } = await analyzeExistingRecord(record.id, analysis);
+      const { error: updateError } = await updateMedicalRecord(record.id, {
+        ai_analysis: analysis.summary,
+        key_findings: analysis.keyFindings,
+        medications: analysis.medications,
+        recommendations: analysis.recommendations,
+        urgency_level: analysis.urgencyLevel
+      });
       
       if (updateError) {
         throw new Error('Failed to save analysis to database');

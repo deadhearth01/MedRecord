@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { 
   type User as UserType, 
-  searchPatients, 
+  searchPatientsAdvanced, 
   getPatientRecords, 
   getPatientDetails,
   type User as PatientType, 
@@ -68,7 +68,7 @@ export default function PatientSearch({ user }: PatientSearchProps) {
 
     setIsSearching(true);
     try {
-      const results = await searchPatients(searchTerm);
+      const results = await searchPatientsAdvanced(searchTerm);
       if (results.data && !results.error) {
         setSearchResults(results.data);
       } else {

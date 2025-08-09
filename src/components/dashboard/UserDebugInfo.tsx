@@ -14,11 +14,11 @@ export default function UserDebugInfo() {
         console.log('🔍 Loading debug information...');
         
         // Get current user from session
-        const { user, error: userError } = await getCurrentUser();
+        const { user, session } = await getCurrentUser();
         console.log('Current session user:', user);
         
         if (!user) {
-          setDebugInfo({ error: 'No user logged in', userError });
+          setDebugInfo({ error: 'No user logged in', userError: null });
           setIsLoading(false);
           return;
         }

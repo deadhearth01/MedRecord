@@ -270,6 +270,16 @@ export const searchPatientsAdvanced = async (searchTerm: string) => {
   return { data, error }
 }
 
+export const getPatientRecords = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('medical_records')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  
+  return { data, error }
+}
+
 export const getPatientDetails = async (userId: string) => {
   try {
     // Get patient basic info

@@ -162,13 +162,15 @@ function DashboardContent() {
       scale: 0.95,
       duration: 0.3,
       ease: "power2.out",
-      onComplete: async () => {
-        try {
-          await signOut();
+      onComplete: () => {
+        // Handle sign out after animation
+        signOut().then(() => {
           router.push('/');
-        } catch (error) {
+        }).catch((error) => {
           // Handle error silently
-        }
+          console.error('Sign out error:', error);
+          router.push('/');
+        });
       }
     });
   };
