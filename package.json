@@ -9,8 +9,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "deploy": "vercel --prod",
-    "preview": "vercel",
-    "postbuild": "next-sitemap"
+    "preview": "vercel"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
