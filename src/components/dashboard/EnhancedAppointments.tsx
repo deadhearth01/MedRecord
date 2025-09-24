@@ -162,7 +162,10 @@ export default function EnhancedAppointments({ userId, userType }: EnhancedAppoi
     try {
       const appointmentData = {
         ...appointmentForm,
-        patient_id: userId
+        patient_id: userId,
+        status: 'pending' as const,
+        payment_status: 'pending' as const,
+        reminder_sent: false
       };
 
       const { data, error } = await createEnhancedAppointment(appointmentData);

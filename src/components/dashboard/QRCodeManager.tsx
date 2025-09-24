@@ -21,6 +21,7 @@ import {
   User,
   Activity
 } from 'lucide-react';
+import QRCodeLib from 'qrcode';
 import { QRCode as QRCodeType, generateUserQRCode, getUserQRCodes, scanQRCode } from '@/lib/supabase';
 
 interface QRCodeManagerProps {
@@ -39,8 +40,26 @@ export default function QRCodeManager({ userId, userMedId, userType }: QRCodeMan
   const [scanResult, setScanResult] = useState<{ medId: string } | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [qrCodeDataURL, setQrCodeDataURL] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Generate QR code image from data
+  const generateQRCodeImage = async (data: string): Promise<string> => {
+    try {
+      return await QRCodeLib.toDataURL(data, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+    } catch (error) {
+      console.error('Error generating QR code image:', error);
+      return '';
+    }
+  };
 
   // Load user's QR codes
   const loadQRCodes = async () => {
@@ -141,27 +160,56 @@ export default function QRCodeManager({ userId, userMedId, userType }: QRCodeMan
   };
 
   // Download QR code image
-  const downloadQRCode = (qrCode: QRCodeType) => {
-    // Generate QR code image and trigger download
-    // This would typically use a QR code library
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    if (ctx) {
-      canvas.width = 256;
-      canvas.height = 256;
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, 256, 256);
-      ctx.fillStyle = 'black';
-      ctx.font = '12px Arial';
-      ctx.fillText('QR Code', 100, 128);
-      
+  const downloadQRCode = async (qrCode: QRCodeType) => {
+    try {
+      const qrImageURL = await generateQRCodeImage(qrCode.qr_code_data);
       const link = document.createElement('a');
       link.download = `medid-qr-${qrCode.id}.png`;
-      link.href = canvas.toDataURL();
+      link.href = qrImageURL;
       link.click();
+    } catch (error) {
+      console.error('Error downloading QR code:', error);
     }
   };
+
+  // QR Code Preview Component
+  const QRCodePreview = ({ qrCode }: { qrCode: QRCodeType }) => {
+    const [previewURL, setPreviewURL] = useState<string>('');
+
+    useEffect(() => {
+      generateQRCodeImage(qrCode.qr_code_data).then(setPreviewURL);
+    }, [qrCode.qr_code_data]);
+
+    return (
+      <div 
+        className="w-full h-48 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors"
+        onClick={() => {
+          setSelectedQR(qrCode);
+          setQrModalOpen(true);
+        }}
+      >
+        {previewURL ? (
+          <img 
+            src={previewURL} 
+            alt={`QR Code preview for MED ID: ${userMedId}`}
+            className="max-w-full max-h-full object-contain p-4"
+          />
+        ) : (
+          <div className="text-center">
+            <RefreshCw className="h-8 w-8 text-gray-400 mx-auto mb-2 animate-spin" />
+            <p className="text-sm text-gray-500">Loading...</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Generate QR code image when modal opens
+  useEffect(() => {
+    if (selectedQR && qrModalOpen) {
+      generateQRCodeImage(selectedQR.qr_code_data).then(setQrCodeDataURL);
+    }
+  }, [selectedQR, qrModalOpen]);
 
   if (loading) {
     return (
@@ -254,18 +302,7 @@ export default function QRCodeManager({ userId, userMedId, userType }: QRCodeMan
             
             <CardContent className="space-y-4">
               {/* QR Code Display Area */}
-              <div 
-                className="w-full h-48 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors"
-                onClick={() => {
-                  setSelectedQR(qrCode);
-                  setQrModalOpen(true);
-                }}
-              >
-                <div className="text-center">
-                  <QrCode className="h-16 w-16 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Click to view QR code</p>
-                </div>
-              </div>
+              <QRCodePreview qrCode={qrCode} />
 
               {/* Stats */}
               <div className="flex justify-between text-sm text-gray-600">
@@ -348,14 +385,23 @@ export default function QRCodeManager({ userId, userMedId, userType }: QRCodeMan
           
           <div className="space-y-4">
             <div className="w-full h-64 bg-white border rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <QrCode className="h-32 w-32 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">QR Code would render here</p>
-              </div>
+              {qrCodeDataURL ? (
+                <img 
+                  src={qrCodeDataURL} 
+                  alt={`QR Code for MED ID: ${userMedId}`}
+                  className="max-w-full max-h-full object-contain"
+                />
+              ) : (
+                <div className="text-center">
+                  <RefreshCw className="h-8 w-8 text-gray-400 mx-auto mb-2 animate-spin" />
+                  <p className="text-sm text-gray-500">Generating QR Code...</p>
+                </div>
+              )}
             </div>
             
             {selectedQR && (
               <div className="text-center text-sm text-gray-600">
+                <p>MED ID: <span className="font-mono font-semibold">{userMedId}</span></p>
                 <p>Generated: {new Date(selectedQR.created_at).toLocaleDateString()}</p>
                 <p>Scanned: {selectedQR.scan_count} times</p>
               </div>

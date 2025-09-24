@@ -1,8 +1,8 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
 
-const inter = Inter({ subsets: ['latin'] })
+// Using fallback font due to network constraints
+const inter = { className: 'font-sans' }
 
 export const metadata: Metadata = {
   title: 'MedRecord - Your Medical Records Assistant',
