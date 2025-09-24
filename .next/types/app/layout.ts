@@ -1,4 +1,4 @@
-// File: C:\Users\jagad\OneDrive\Documents\vs_code\MedRecord\src\app\layout.tsx
+// File: /home/runner/work/MedRecord/MedRecord/src/app/layout.tsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
